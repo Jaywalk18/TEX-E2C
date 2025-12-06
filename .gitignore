@@ -1,0 +1,35 @@
+# Node.js
+node_modules/
+package-lock.json
+
+# Build output
+vscode-extension/out/
+out/
+
+# VS Code extension packages (发布到GitHub Release)
+*.vsix
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.pdf
+
+# Temp files
+*.tmp
+*.bak
+
