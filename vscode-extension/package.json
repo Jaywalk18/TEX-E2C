@@ -1,0 +1,232 @@
+{
+  "name": "tex-e2c",
+  "displayName": "TeX E2C - 中英同步翻译",
+  "description": "在LaTeX中用中文注释标记原文，自动同步翻译为英文，无缝衔接现有编译工作流",
+  "version": "0.2.0",
+  "publisher": "tex-e2c",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "icon": "images/icon.png",
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "latex",
+    "chinese",
+    "english",
+    "translation",
+    "academic",
+    "paper",
+    "sync"
+  ],
+  "activationEvents": [
+    "onLanguage:latex",
+    "workspaceContains:**/*.tex"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "tex-e2c.translateAll",
+        "title": "中文→英文（全文翻译）",
+        "icon": "$(globe)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.translateAllForce",
+        "title": "中文→英文（强制重新翻译）",
+        "icon": "$(refresh)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.addChineseComments",
+        "title": "英文→中文注释",
+        "icon": "$(comment)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.addChineseCommentsForce",
+        "title": "英文→中文注释（强制重新翻译）",
+        "icon": "$(comment-discussion)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.sync",
+        "title": "同步更新（中文注释→英文）",
+        "icon": "$(sync)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.translateSelection",
+        "title": "翻译选中文本",
+        "icon": "$(symbol-text)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.clearCache",
+        "title": "清除翻译缓存",
+        "icon": "$(trash)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.configureApi",
+        "title": "配置API",
+        "icon": "$(settings-gear)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.fetchModels",
+        "title": "获取模型列表",
+        "icon": "$(cloud-download)",
+        "category": "TeX E2C"
+      },
+      {
+        "command": "tex-e2c.selectModel",
+        "title": "选择翻译模型",
+        "icon": "$(list-selection)",
+        "category": "TeX E2C"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceLangId == latex",
+          "command": "tex-e2c.translateAll",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceLangId == latex && editorHasSelection",
+          "command": "tex-e2c.translateSelection",
+          "group": "tex-e2c@1"
+        },
+        {
+          "when": "resourceLangId == latex",
+          "command": "tex-e2c.translateAll",
+          "group": "tex-e2c@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .tex",
+          "command": "tex-e2c.translateAll",
+          "group": "tex-e2c@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "tex-e2c.translateAll",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
+        "when": "resourceLangId == latex"
+      }
+    ],
+    "configuration": {
+      "title": "TeX E2C",
+      "properties": {
+        "tex-e2c.markerPrefix": {
+          "type": "string",
+          "default": "% @cn:",
+          "description": "中文标记前缀，用于标识需要翻译的中文内容"
+        },
+        "tex-e2c.autoTranslateOnSave": {
+          "type": "string",
+          "default": "off",
+          "enum": ["off", "auto", "cn2en", "en2cn", "sync"],
+          "enumDescriptions": [
+            "关闭自动翻译",
+            "自动检测：有中文翻译成英文，有英文添加中文注释",
+            "中文→英文：保存时自动将中文翻译成英文",
+            "英文→中文注释：保存时自动为英文添加中文注释",
+            "同步更新：保存时自动同步已标记的翻译"
+          ],
+          "description": "保存文件时自动翻译模式"
+        },
+        "tex-e2c.autoAddMarkerOnNewline": {
+          "type": "boolean",
+          "default": true,
+          "description": "在中文注释行按回车时，自动在新行添加中文标识符"
+        },
+        "tex-e2c.showInlineHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "在编辑器中显示翻译状态提示"
+        },
+        "tex-e2c.apiBaseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "API基础URL（支持OpenAI兼容接口，如 https://api.openai.com/v1 或 https://api.deepseek.com/v1）"
+        },
+        "tex-e2c.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API密钥"
+        },
+        "tex-e2c.model": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "description": "翻译使用的模型"
+        },
+        "tex-e2c.availableModels": {
+          "type": "array",
+          "default": [],
+          "description": "可用模型列表（从API获取）"
+        },
+        "tex-e2c.contextLines": {
+          "type": "number",
+          "default": 3,
+          "description": "翻译时提供的上下文行数（提高翻译质量）"
+        },
+        "tex-e2c.batchSize": {
+          "type": "number",
+          "default": 5,
+          "description": "批量翻译时每批处理的数量"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tex-e2c",
+          "title": "TeX E2C",
+          "icon": "images/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "tex-e2c": [
+        {
+          "id": "tex-e2c.config",
+          "name": "⚙️ 配置"
+        },
+        {
+          "id": "tex-e2c.status",
+          "name": "📊 状态"
+        },
+        {
+          "id": "tex-e2c.actions",
+          "name": "⚡ 操作"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "sharp": "^0.34.5",
+    "typescript": "^5.0.0"
+  }
+}
