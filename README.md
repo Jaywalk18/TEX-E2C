@@ -202,6 +202,8 @@ Combined English translation.
 ### Q: 如何清除翻译缓存？
 
 点击侧边栏 → 操作 → 清除缓存
+### Q: 是否可以在Overleaf中使用?
+可参考https://github.com/QAbot-zh/overleaf-bilingual-assitant.git的油猴插件
 
 ## 📄 License
 
