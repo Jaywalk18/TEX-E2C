@@ -203,7 +203,7 @@ Combined English translation.
 
 点击侧边栏 → 操作 → 清除缓存
 ### Q: 是否可以在Overleaf中使用?
-可参考https://github.com/QAbot-zh/overleaf-bilingual-assitant.git的油猴插件
+可参考\url<https://github.com/QAbot-zh/overleaf-bilingual-assitant.git>的油猴插件
 
 ## 📄 License
 
