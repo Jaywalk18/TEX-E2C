@@ -974,30 +974,45 @@ ${text}`;
             cancellable: false
         }, async () => {
             try {
-                const translated = await this.translateText(selectedText);
                 const markerPrefix = this.getMarkerPrefix();
                 
-                // 获取选区的缩进
-                const startLine = editor.document.lineAt(selection.start.line);
-                const indent = startLine.text.match(/^(\s*)/)?.[1] || '';
+                // 按行分割选中的文本
+                const lines = selectedText.split('\n');
+                const resultLines: string[] = [];
 
-                // 构建新内容
-                const cnComment = `${indent}${markerPrefix} ${selectedText.trim()}`;
-                const enText = `${indent}${translated}`;
-                const newText = `${cnComment}\n${enText}`;
+                for (const line of lines) {
+                    const lineIndent = line.match(/^(\s*)/)?.[1] || '';
+                    const content = line.trim();
+
+                    // 空行或不包含中文的行保持原样
+                    if (!content || !this.containsChinese(content)) {
+                        resultLines.push(line);
+                        continue;
+                    }
+
+                    // 翻译当前行
+                    const translated = await this.translateText(content);
+
+                    // 构建：中文注释 + 英文翻译
+                    resultLines.push(`${lineIndent}${markerPrefix} ${content}`);
+                    resultLines.push(`${lineIndent}${translated}`);
+
+                    // 更新缓存
+                    const hash = this.computeHash(content);
+                    this.cache[hash] = {
+                        cnText: content,
+                        enText: translated,
+                        model: config.get<string>('model', 'gpt-4o-mini'),
+                        timestamp: Date.now()
+                    };
+                }
+
+                const newText = resultLines.join('\n');
 
                 await editor.edit(editBuilder => {
                     editBuilder.replace(selection, newText);
                 });
 
-                // 更新缓存
-                const hash = this.computeHash(selectedText);
-                this.cache[hash] = {
-                    cnText: selectedText,
-                    enText: translated,
-                    model: config.get<string>('model', 'gpt-4o-mini'),
-                    timestamp: Date.now()
-                };
                 await this.saveCache();
 
                 vscode.window.showInformationMessage('翻译完成！');
